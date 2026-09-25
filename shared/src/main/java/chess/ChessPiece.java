@@ -66,15 +66,15 @@ public class ChessPiece {
             int[][] directions;
 
             if (type == PieceType.BISHOP) {
-                directions = new int[][]{
+                directions = new int[][] {
                         {1, 1}, {1, -1}, {-1, 1}, {-1, -1}
                 };
             } else if (type == PieceType.ROOK) {
-                directions = new int[][]{
+                directions = new int[][] {
                         {1, 0}, {-1, 0}, {0, 1}, {0, -1}
                 };
             } else {
-                directions = new int[][]{
+                directions = new int[][] {
                         {1, 1}, {1, -1}, {-1, 1}, {-1, -1},
                         {1, 0}, {-1, 0}, {0, 1}, {0, -1}
                 };
@@ -200,5 +200,28 @@ public class ChessPiece {
         } else {
             moves.add(new ChessMove(start, end, null));
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (!(obj instanceof ChessPiece)) {
+            return false;
+        }
+
+        ChessPiece other = (ChessPiece) obj;
+
+        return pieceColor == other.pieceColor
+                && type == other.type;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = pieceColor.hashCode();
+        result = 31 * result + type.hashCode();
+        return result;
     }
 }
