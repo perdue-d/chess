@@ -60,13 +60,72 @@ public class ChessBoard {
                     new ChessPiece(ChessGame.TeamColor.WHITE, pieces[col - 1]));
 
             addPiece(new ChessPosition(2, col),
-                    new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN));
+                    new ChessPiece(ChessGame.TeamColor.WHITE,
+                            ChessPiece.PieceType.PAWN));
 
             addPiece(new ChessPosition(7, col),
-                    new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN));
+                    new ChessPiece(ChessGame.TeamColor.BLACK,
+                            ChessPiece.PieceType.PAWN));
 
             addPiece(new ChessPosition(8, col),
                     new ChessPiece(ChessGame.TeamColor.BLACK, pieces[col - 1]));
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (!(obj instanceof ChessBoard)) {
+            return false;
+        }
+
+        ChessBoard other = (ChessBoard) obj;
+
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPosition position = new ChessPosition(row, col);
+
+                ChessPiece first = getPiece(position);
+                ChessPiece second = other.getPiece(position);
+
+                if (first == null && second == null) {
+                    continue;
+                }
+
+                if (first == null || second == null) {
+                    return false;
+                }
+
+                if (first.getPieceType() != second.getPieceType()
+                        || first.getTeamColor() != second.getTeamColor()) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 1;
+
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPiece piece = getPiece(new ChessPosition(row, col));
+
+                result = 31 * result;
+
+                if (piece != null) {
+                    result += piece.getPieceType().hashCode();
+                    result = 31 * result + piece.getTeamColor().hashCode();
+                }
+            }
+        }
+
+        return result;
     }
 }
