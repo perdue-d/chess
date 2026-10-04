@@ -17,6 +17,7 @@ public class ChessGame {
 
     public ChessGame() {
         board = new ChessBoard();
+        board.resetBoard();
         teamTurn = TeamColor.WHITE;
     }
 
@@ -286,5 +287,27 @@ public class ChessGame {
         }
 
         return null;
+    }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (!(obj instanceof ChessGame)) {
+            return false;
+        }
+
+        ChessGame other = (ChessGame) obj;
+
+        return teamTurn == other.teamTurn
+                && board.equals(other.board);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = board.hashCode();
+        result = 31 * result + teamTurn.hashCode();
+        return result;
     }
 }
