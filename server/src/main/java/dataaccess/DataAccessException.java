@@ -1,1 +1,1 @@
-public class DataAccessException extends Exception{
+public class DataAccessException extends Exception{}
