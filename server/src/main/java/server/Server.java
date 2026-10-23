@@ -1,4 +1,3 @@
-
 package server;
 
 import com.google.gson.Gson;
@@ -34,61 +33,82 @@ public class Server {
         );
 
         javalin.exception(ServiceException.class, (e, ctx) -> {
-            ctx.status(e.status())
-                    .json(Map.of("message", e.getMessage()));
+            ctx.status(e.status());
+            ctx.contentType("application/json");
+            ctx.result(gson.toJson(Map.of("message", e.getMessage())));
         });
 
         javalin.exception(JsonSyntaxException.class, (e, ctx) -> {
-            ctx.status(400)
-                    .json(Map.of("message", "Error: bad request"));
+            ctx.status(400);
+            ctx.contentType("application/json");
+            ctx.result(gson.toJson(Map.of("message", "Error: bad request")));
         });
 
         javalin.exception(Exception.class, (e, ctx) -> {
-            ctx.status(500)
-                    .json(Map.of("message", "Error: " + e.getMessage()));
+            ctx.status(500);
+            ctx.contentType("application/json");
+            ctx.result(gson.toJson(Map.of("message", "Error: internal server error")));
         });
 
+        // Clear database
         javalin.delete("/db", ctx -> {
             users.clear();
             auths.clear();
             games.clear();
-            ctx.json(Map.of());
+            ctx.contentType("application/json");
+            ctx.result("{}");
         });
 
+        // Register
         javalin.post("/user", ctx -> {
             UserData user = gson.fromJson(ctx.body(), UserData.class);
-            ctx.json(userService.register(user));
+            ctx.contentType("application/json");
+            ctx.result(gson.toJson(userService.register(user)));
         });
 
+        // Login
         javalin.post("/session", ctx -> {
             LoginRequest request =
                     gson.fromJson(ctx.body(), LoginRequest.class);
 
-            ctx.json(userService.login(
+            var result = userService.login(
                     request == null ? null : request.username(),
                     request == null ? null : request.password()
-            ));
+            );
+
+            ctx.contentType("application/json");
+            ctx.result(gson.toJson(result));
         });
 
+        // Logout
         javalin.delete("/session", ctx -> {
             userService.logout(ctx.header("authorization"));
-            ctx.json(Map.of());
+            ctx.contentType("application/json");
+            ctx.result("{}");
         });
 
+        // List games
         javalin.get("/game", ctx -> {
-            ctx.json(gameService.list(ctx.header("authorization")));
+            var result = gameService.list(ctx.header("authorization"));
+            ctx.contentType("application/json");
+            ctx.result(gson.toJson(result));
         });
 
+        // Create game
         javalin.post("/game", ctx -> {
             CreateRequest request =
                     gson.fromJson(ctx.body(), CreateRequest.class);
 
-            ctx.json(gameService.create(
+            var result = gameService.create(
                     ctx.header("authorization"),
                     request == null ? null : request.gameName()
-            ));
+            );
+
+            ctx.contentType("application/json");
+            ctx.result(gson.toJson(result));
         });
 
+        // Join game
         javalin.put("/game", ctx -> {
             JoinRequest request =
                     gson.fromJson(ctx.body(), JoinRequest.class);
@@ -99,7 +119,8 @@ public class Server {
                     request == null ? null : request.gameID()
             );
 
-            ctx.json(Map.of());
+            ctx.contentType("application/json");
+            ctx.result("{}");
         });
     }
 
