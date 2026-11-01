@@ -66,7 +66,11 @@ public class MySqlDataAccess implements UserDAO, AuthDAO, GameDAO {
 
     @Override
     public UserData getUser(String username) {
-        String sql = "SELECT * FROM users WHERE username=?";
+        String sql = """
+                SELECT username, password, email
+                FROM users
+                WHERE username=?
+                """;
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -156,7 +160,11 @@ public class MySqlDataAccess implements UserDAO, AuthDAO, GameDAO {
 
     @Override
     public GameData getGame(int id) {
-        String sql = "SELECT * FROM games WHERE gameID=?";
+        String sql = """
+                SELECT gameID, whiteUsername, blackUsername, gameName, game
+                FROM games
+                WHERE gameID=?
+                """;
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -180,7 +188,10 @@ public class MySqlDataAccess implements UserDAO, AuthDAO, GameDAO {
     public Collection<GameData> listGames() {
         Collection<GameData> games = new ArrayList<>();
 
-        String sql = "SELECT * FROM games";
+        String sql = """
+                SELECT gameID, whiteUsername, blackUsername, gameName, game
+                FROM games
+                """;
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -281,7 +292,7 @@ public class MySqlDataAccess implements UserDAO, AuthDAO, GameDAO {
 
         } catch (Exception e) {
             throw new IllegalStateException(
-                    "Unable to update database: " + sql, e
+                    "Database update failed: " + e.getMessage(), e
             );
         }
     }
