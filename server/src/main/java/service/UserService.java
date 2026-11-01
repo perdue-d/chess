@@ -5,10 +5,12 @@ import dataaccess.UserDAO;
 import dataaccess.AuthDAO;
 import model.UserData;
 import model.AuthData;
-import java.util.UUID;
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.util.UUID;
+
 public class UserService {
+
     private final UserDAO users;
     private final AuthDAO auths;
 
@@ -20,8 +22,10 @@ public class UserService {
     public record LoginResult(String username, String authToken) {}
 
     public LoginResult register(UserData user) {
-        if (user == null || blank(user.username()) ||
-                blank(user.password()) || blank(user.email())) {
+        if (user == null ||
+                blank(user.username()) ||
+                blank(user.password()) ||
+                blank(user.email())) {
             throw new ServiceException(400, "Error: bad request");
         }
 
@@ -29,14 +33,23 @@ public class UserService {
             throw new ServiceException(403, "Error: already taken");
         }
 
-        String hash = BCrypt.hashpw(user.password(), BCrypt.gensalt());
-        users.createUser(new UserData(
-                user.username(),
-                hash,
-                user.email()
-        ));
+        String hashedPassword = BCrypt.hashpw(
+                user.password(),
+                BCrypt.gensalt()
+        );
 
-        return new LoginResult(user.username(), newToken(user.username()));
+        UserData savedUser = new UserData(
+                user.username(),
+                hashedPassword,
+                user.email()
+        );
+
+        users.createUser(savedUser);
+
+        return new LoginResult(
+                user.username(),
+                newToken(user.username())
+        );
     }
 
     public LoginResult login(String username, String password) {
@@ -46,11 +59,15 @@ public class UserService {
 
         UserData user = users.getUser(username);
 
-        if (user == null || !BCrypt.checkpw(password, user.password())) {
+        if (user == null ||
+                !BCrypt.checkpw(password, user.password())) {
             throw new ServiceException(401, "Error: unauthorized");
         }
 
-        return new LoginResult(username, newToken(username));
+        return new LoginResult(
+                username,
+                newToken(username)
+        );
     }
 
     public void logout(String token) {
@@ -59,7 +76,9 @@ public class UserService {
     }
 
     public String authenticate(String token) {
-        AuthData auth = token == null ? null : auths.getAuth(token);
+        AuthData auth = token == null
+                ? null
+                : auths.getAuth(token);
 
         if (auth == null) {
             throw new ServiceException(401, "Error: unauthorized");
@@ -70,7 +89,11 @@ public class UserService {
 
     private String newToken(String username) {
         String token = UUID.randomUUID().toString();
-        auths.createAuth(new AuthData(token, username));
+
+        auths.createAuth(
+                new AuthData(token, username)
+        );
+
         return token;
     }
 
