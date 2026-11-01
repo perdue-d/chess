@@ -1,22 +1,29 @@
+
 package server;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import dataaccess.*;
+import dataaccess.MySqlDataAccess;
+import dataaccess.UserDAO;
+import dataaccess.AuthDAO;
+import dataaccess.GameDAO;
 import io.javalin.Javalin;
 import model.UserData;
-import service.*;
-import java.util.Map;
-import dataaccess.MySqlDataAccess;
 import service.UserService;
 import service.GameService;
+import service.ServiceException;
+
+import java.util.Map;
 
 public class Server {
+
     private final Javalin javalin;
-    MySqlDataAccess database = new MySqlDataAccess();
-    private final UserDAO users = new MemoryUserDAO();
-    private final AuthDAO auths = new MemoryAuthDAO();
-    private final GameDAO games = new MemoryGameDAO();
+
+    private final MySqlDataAccess database = new MySqlDataAccess();
+
+    private final UserDAO users = database;
+    private final AuthDAO auths = database;
+    private final GameDAO games = database;
 
     private final UserService userService =
             new UserService(users, auths);
@@ -27,26 +34,32 @@ public class Server {
     private final Gson gson = new Gson();
 
     private record LoginRequest(String username, String password) {}
+
     private record CreateRequest(String gameName) {}
+
     private record JoinRequest(String playerColor, Integer gameID) {}
 
     public Server() {
+
         javalin = Javalin.create(config ->
                 config.staticFiles.add("web")
         );
 
+        // Handle service errors
         javalin.exception(ServiceException.class, (e, ctx) -> {
             ctx.status(e.status());
             ctx.contentType("application/json");
             ctx.result(gson.toJson(Map.of("message", e.getMessage())));
         });
 
+        // Handle invalid JSON
         javalin.exception(JsonSyntaxException.class, (e, ctx) -> {
             ctx.status(400);
             ctx.contentType("application/json");
             ctx.result(gson.toJson(Map.of("message", "Error: bad request")));
         });
 
+        // Handle unexpected errors
         javalin.exception(Exception.class, (e, ctx) -> {
             ctx.status(500);
             ctx.contentType("application/json");
@@ -55,9 +68,7 @@ public class Server {
 
         // Clear database
         javalin.delete("/db", ctx -> {
-            users.clear();
-            auths.clear();
-            games.clear();
+            database.clear();
             ctx.contentType("application/json");
             ctx.result("{}");
         });
@@ -65,6 +76,7 @@ public class Server {
         // Register
         javalin.post("/user", ctx -> {
             UserData user = gson.fromJson(ctx.body(), UserData.class);
+
             ctx.contentType("application/json");
             ctx.result(gson.toJson(userService.register(user)));
         });
@@ -86,6 +98,7 @@ public class Server {
         // Logout
         javalin.delete("/session", ctx -> {
             userService.logout(ctx.header("authorization"));
+
             ctx.contentType("application/json");
             ctx.result("{}");
         });
@@ -93,6 +106,7 @@ public class Server {
         // List games
         javalin.get("/game", ctx -> {
             var result = gameService.list(ctx.header("authorization"));
+
             ctx.contentType("application/json");
             ctx.result(gson.toJson(result));
         });

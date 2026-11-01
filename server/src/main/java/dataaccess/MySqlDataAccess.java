@@ -17,6 +17,32 @@ public class MySqlDataAccess implements UserDAO, AuthDAO, GameDAO {
 
     private final Gson gson = new Gson();
 
+    private final String[] createStatements = {
+            """
+            CREATE TABLE IF NOT EXISTS users (
+                username VARCHAR(255) PRIMARY KEY,
+                password VARCHAR(255) NOT NULL,
+                email VARCHAR(255) NOT NULL
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS auth (
+                authToken VARCHAR(255) PRIMARY KEY,
+                username VARCHAR(255) NOT NULL
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS games (
+                gameID INT NOT NULL AUTO_INCREMENT,
+                whiteUsername VARCHAR(255),
+                blackUsername VARCHAR(255),
+                gameName VARCHAR(255) NOT NULL,
+                game TEXT NOT NULL,
+                PRIMARY KEY (gameID)
+            )
+            """
+    };
+
     public MySqlDataAccess() {
         configureDatabase();
     }
@@ -30,8 +56,12 @@ public class MySqlDataAccess implements UserDAO, AuthDAO, GameDAO {
                 VALUES (?, ?, ?)
                 """;
 
-        executeUpdate(sql, user.username(),
-                user.password(), user.email());
+        executeUpdate(
+                sql,
+                user.username(),
+                user.password(),
+                user.email()
+        );
     }
 
     @Override
@@ -52,6 +82,7 @@ public class MySqlDataAccess implements UserDAO, AuthDAO, GameDAO {
                     );
                 }
             }
+
         } catch (Exception e) {
             throw new IllegalStateException("Unable to get user", e);
         }
@@ -59,7 +90,7 @@ public class MySqlDataAccess implements UserDAO, AuthDAO, GameDAO {
         return null;
     }
 
-    // AUTH TOKENS
+    // AUTHENTICATION
 
     @Override
     public void createAuth(AuthData auth) {
@@ -68,7 +99,11 @@ public class MySqlDataAccess implements UserDAO, AuthDAO, GameDAO {
                 VALUES (?, ?)
                 """;
 
-        executeUpdate(sql, auth.authToken(), auth.username());
+        executeUpdate(
+                sql,
+                auth.authToken(),
+                auth.username()
+        );
     }
 
     @Override
@@ -88,6 +123,7 @@ public class MySqlDataAccess implements UserDAO, AuthDAO, GameDAO {
                     );
                 }
             }
+
         } catch (Exception e) {
             throw new IllegalStateException("Unable to get auth", e);
         }
@@ -97,7 +133,10 @@ public class MySqlDataAccess implements UserDAO, AuthDAO, GameDAO {
 
     @Override
     public void deleteAuth(String token) {
-        executeUpdate("DELETE FROM auth WHERE authToken=?", token);
+        executeUpdate(
+                "DELETE FROM auth WHERE authToken=?",
+                token
+        );
     }
 
     // GAMES
@@ -129,6 +168,7 @@ public class MySqlDataAccess implements UserDAO, AuthDAO, GameDAO {
                     return readGame(rs);
                 }
             }
+
         } catch (Exception e) {
             throw new IllegalStateException("Unable to get game", e);
         }
@@ -161,22 +201,28 @@ public class MySqlDataAccess implements UserDAO, AuthDAO, GameDAO {
     public void updateGame(GameData game) {
         String sql = """
                 UPDATE games
-                SET whiteUsername=?, blackUsername=?,
-                    gameName=?, game=?
+                SET whiteUsername=?,
+                    blackUsername=?,
+                    gameName=?,
+                    game=?
                 WHERE gameID=?
                 """;
 
-        executeUpdate(sql,
+        executeUpdate(
+                sql,
                 game.whiteUsername(),
                 game.blackUsername(),
                 game.gameName(),
                 gson.toJson(game.game()),
-                game.gameID());
+                game.gameID()
+        );
     }
 
     private GameData readGame(ResultSet rs) throws SQLException {
+        String json = rs.getString("game");
+
         ChessGame game = gson.fromJson(
-                rs.getString("game"),
+                json,
                 ChessGame.class
         );
 
@@ -202,8 +248,10 @@ public class MySqlDataAccess implements UserDAO, AuthDAO, GameDAO {
 
     private int executeUpdate(String sql, Object... params) {
         try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement ps =
-                     conn.prepareStatement(sql, RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = conn.prepareStatement(
+                     sql,
+                     RETURN_GENERATED_KEYS
+             )) {
 
             for (int i = 0; i < params.length; i++) {
                 Object param = params[i];
@@ -215,7 +263,9 @@ public class MySqlDataAccess implements UserDAO, AuthDAO, GameDAO {
                 } else if (param == null) {
                     ps.setNull(i + 1, Types.NULL);
                 } else {
-                    throw new IllegalArgumentException("Unsupported parameter");
+                    throw new IllegalArgumentException(
+                            "Unsupported parameter type"
+                    );
                 }
             }
 
@@ -230,37 +280,13 @@ public class MySqlDataAccess implements UserDAO, AuthDAO, GameDAO {
             return 0;
 
         } catch (Exception e) {
-            throw new IllegalStateException("Unable to update database", e);
+            throw new IllegalStateException(
+                    "Unable to update database: " + sql, e
+            );
         }
     }
 
-    // CREATE TABLES
-
-    private final String[] createStatements = {
-            """
-            CREATE TABLE IF NOT EXISTS users (
-                username VARCHAR(255) PRIMARY KEY,
-                password VARCHAR(255) NOT NULL,
-                email VARCHAR(255) NOT NULL
-            )
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS auth (
-                authToken VARCHAR(255) PRIMARY KEY,
-                username VARCHAR(255) NOT NULL
-            )
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS games (
-                gameID INT NOT NULL AUTO_INCREMENT,
-                whiteUsername VARCHAR(255),
-                blackUsername VARCHAR(255),
-                gameName VARCHAR(255) NOT NULL,
-                game TEXT NOT NULL,
-                PRIMARY KEY (gameID)
-            )
-            """
-    };
+    // DATABASE SETUP
 
     private void configureDatabase() {
         try {
@@ -274,8 +300,11 @@ public class MySqlDataAccess implements UserDAO, AuthDAO, GameDAO {
                     }
                 }
             }
+
         } catch (Exception e) {
-            throw new IllegalStateException("Unable to configure database", e);
+            throw new IllegalStateException(
+                    "Unable to configure database", e
+            );
         }
     }
 }
