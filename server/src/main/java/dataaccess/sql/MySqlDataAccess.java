@@ -66,11 +66,7 @@ public class MySqlDataAccess implements UserDAO, AuthDAO, GameDAO {
 
     @Override
     public UserData getUser(String username) {
-        String sql = """
-                SELECT username, password, email
-                FROM users
-                WHERE username=?
-                """;
+        String sql = "SELECT * FROM users WHERE username=?";
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -112,11 +108,7 @@ public class MySqlDataAccess implements UserDAO, AuthDAO, GameDAO {
 
     @Override
     public AuthData getAuth(String token) {
-        String sql = """
-        SELECT authToken, username
-        FROM auth
-        WHERE authToken=?
-        """;
+        String sql = "SELECT * FROM auth WHERE authToken=?";
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -164,11 +156,7 @@ public class MySqlDataAccess implements UserDAO, AuthDAO, GameDAO {
 
     @Override
     public GameData getGame(int id) {
-        String sql = """
-                SELECT gameID, whiteUsername, blackUsername, gameName, game
-                FROM games
-                WHERE gameID=?
-                """;
+        String sql = "SELECT * FROM games WHERE gameID=?";
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -192,10 +180,7 @@ public class MySqlDataAccess implements UserDAO, AuthDAO, GameDAO {
     public Collection<GameData> listGames() {
         Collection<GameData> games = new ArrayList<>();
 
-        String sql = """
-                SELECT gameID, whiteUsername, blackUsername, gameName, game
-                FROM games
-                """;
+        String sql = "SELECT * FROM games";
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -296,7 +281,7 @@ public class MySqlDataAccess implements UserDAO, AuthDAO, GameDAO {
 
         } catch (Exception e) {
             throw new IllegalStateException(
-                    "Database update failed: " + e.getMessage(), e
+                    "Unable to update database: " + sql, e
             );
         }
     }

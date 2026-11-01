@@ -1,12 +1,11 @@
 
 package dataaccess.sql;
 
-import dataaccess.MySqlDataAccess;
+import dataaccess.UserDAO;
 import model.UserData;
 import model.AuthData;
 import model.GameData;
 import chess.ChessGame;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,11 +15,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class MySqlDataAccessTests {
 
-    private MySqlDataAccess database;
+    private UserDAO.MySqlDataAccess database;
 
     @BeforeEach
     public void setup() {
-        database = new MySqlDataAccess();
+        database = new UserDAO.MySqlDataAccess();
         database.clear();
     }
 

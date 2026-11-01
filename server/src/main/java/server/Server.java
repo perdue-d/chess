@@ -3,7 +3,6 @@ package server;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import dataaccess.MySqlDataAccess;
 import dataaccess.UserDAO;
 import dataaccess.AuthDAO;
 import dataaccess.GameDAO;
@@ -19,7 +18,7 @@ public class Server {
 
     private final Javalin javalin;
 
-    private final MySqlDataAccess database = new MySqlDataAccess();
+    private final UserDAO.MySqlDataAccess database = new UserDAO.MySqlDataAccess();
 
     private final UserDAO users = database;
     private final AuthDAO auths = database;
