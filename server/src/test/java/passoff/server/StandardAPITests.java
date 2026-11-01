@@ -9,7 +9,7 @@ import java.net.HttpURLConnection;
 import java.util.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class dStandardAPITests {
+public class StandardAPITests {
 
     private static TestUser existingUser;
     private static TestUser newUser;
