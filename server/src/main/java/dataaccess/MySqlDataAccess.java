@@ -112,7 +112,11 @@ public class MySqlDataAccess implements UserDAO, AuthDAO, GameDAO {
 
     @Override
     public AuthData getAuth(String token) {
-        String sql = "SELECT * FROM auth WHERE authToken=?";
+        String sql = """
+        SELECT authToken, username
+        FROM auth
+        WHERE authToken=?
+        """;
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
