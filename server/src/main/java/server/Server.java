@@ -7,10 +7,13 @@ import io.javalin.Javalin;
 import model.UserData;
 import service.*;
 import java.util.Map;
+import dataaccess.MySqlDataAccess;
+import service.UserService;
+import service.GameService;
 
 public class Server {
     private final Javalin javalin;
-
+    MySqlDataAccess database = new MySqlDataAccess();
     private final UserDAO users = new MemoryUserDAO();
     private final AuthDAO auths = new MemoryAuthDAO();
     private final GameDAO games = new MemoryGameDAO();
