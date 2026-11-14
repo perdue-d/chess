@@ -183,4 +183,18 @@ class ServerFacadeTests {
 
         assertEquals(401, error.status());
     }
+    @Test
+    void listReturnsBothCreatedGames() {
+        String token = registerAlice();
+        int fridayID = facade.createGame(token, "Friday Chess");
+        int saturdayID = facade.createGame(token, "Saturday Chess");
+
+        var games = facade.listGames(token);
+
+        assertEquals(2, games.size());
+        assertTrue(games.stream().anyMatch(game ->
+                game.gameID() == fridayID && game.gameName().equals("Friday Chess")));
+        assertTrue(games.stream().anyMatch(game ->
+                game.gameID() == saturdayID && game.gameName().equals("Saturday Chess")));
+    }
 }
