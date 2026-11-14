@@ -146,4 +146,12 @@ class ServerFacadeTests {
     private String registerAlice() {
         return facade.register("alice", "password", "alice@example.com").authToken();
     }
+
+    @Test
+    void createRejectsInvalidToken() {
+        var error = assertThrows(RequestException.class,
+                () -> facade.createGame("invalid", "Friday Chess"));
+
+        assertEquals(401, error.status());
+    }
 }
