@@ -163,4 +163,14 @@ class ServerFacadeTests {
 
         assertEquals(400, error.status());
     }
+    @Test
+    void joinRequiresAColor() {
+        String token = registerAlice();
+        int gameID = facade.createGame(token, "Friday Chess");
+
+        var error = assertThrows(RequestException.class,
+                () -> facade.joinGame(token, gameID, null));
+
+        assertEquals(400, error.status());
+    }
 }
