@@ -154,4 +154,13 @@ class ServerFacadeTests {
 
         assertEquals(401, error.status());
     }
+    @Test
+    void joinRejectsMissingGame() {
+        String token = registerAlice();
+
+        var error = assertThrows(RequestException.class,
+                () -> facade.joinGame(token, -1, TeamColor.WHITE));
+
+        assertEquals(400, error.status());
+    }
 }
