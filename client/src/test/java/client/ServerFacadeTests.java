@@ -15,7 +15,8 @@ class ServerFacadeTests {
     @BeforeAll
     static void startServer() {
         server = new Server();
-        facade = new ServerFacade(server.run(0));
+        var port = server.run(0);
+        facade = new ServerFacade(port);
     }
 
     @BeforeEach
